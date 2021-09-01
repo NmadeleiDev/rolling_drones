@@ -39,8 +39,6 @@ services:
       - "./letsencrypt:/letsencrypt"
   ml-serving:
     image: quay.io/codait/max-resnet-50
-    ports:
-      - 5000:5000
     labels:
       - "traefik.enable=true"
       - "traefik.http.middlewares.test-compress.compress=true" 

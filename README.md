@@ -6,6 +6,8 @@
 
 Folers for parts of the project. Each part has its own Dockerfile inside. All parts connected with one docker-compose in the root of the project.
 
+> _All Dockerfiles must have EXPOSE <PORT> to be visible with traefik._
+
 ### ML
 
 Folder for ML Part.
@@ -26,4 +28,3 @@ Folder for DB part
 
 - [X] Check Traefik on localhost.
 - [ ] Make Dockerfiles for each part of the project.
-
