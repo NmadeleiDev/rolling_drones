@@ -12,6 +12,12 @@ Folers for parts of the project. Each part has its own Dockerfile inside. All pa
 
 Folder for ML Part.
 
+> Check ResNet serving
+
+```bash
+curl -F "image=@ml/coffee.jpg" -XPOST http://localhost/ml/model/predict
+```
+
 ### Back
 
 Folder for backend business logic
@@ -27,4 +33,4 @@ Folder for DB part
 ## TODO
 
 - [X] Check Traefik on localhost.
-- [ ] Make Dockerfiles for each part of the project.
+- [X] Make Dockerfiles for each part of the project.

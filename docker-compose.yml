@@ -44,5 +44,23 @@ services:
       - "traefik.http.middlewares.test-compress.compress=true" 
       - "traefik.http.routers.ml.rule=Host(`localhost`) && PathPrefix(`/ml`)"
       - "traefik.http.middlewares.test-stripprefix.stripprefix.prefixes=/ml" # declare middleware
-      # - "traefik.http.routers.ml.loadbalancer.server.port=8500"
       - "traefik.http.routers.ml.middlewares=test-compress,test-stripprefix" # apply middleware
+  front:
+    image: nginx:alpine
+    volumes: 
+      - "./front/build:/usr/share/nginx/html:ro" # if application is static and without SSR. Otherwise use psm2 and volume as "./front:/app" and build your image with CMD ["node", "app.js"] https://pm2.keymetrics.io/docs/usage/docker-pm2-nodejs/ 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.test-compress.compress=true" 
+      - "traefik.http.routers.front.rule=Host(`localhost`)"
+      - "traefik.http.routers.front.middlewares=test-compress" # apply middleware
+  back:
+    image: vad1mo/hello-world-rest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.test-compress.compress=true" 
+      - "traefik.http.routers.back.rule=Host(`localhost`) && PathPrefix(`/backend`)"
+      - "traefik.http.routers.back.middlewares=test-compress" # apply middleware
+      - traefik.frontend.rule=Host:sample.127.0.0.1.xip.io; Path:/api/webhook, /api/token ,PathPrefix:/
+      - traefik.frontend.entryPoints=web
+      - traefik.frontend.priority = 1
