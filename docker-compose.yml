@@ -1,0 +1,50 @@
+version: '3'
+services: 
+  traefik: # Ingress and gateway
+    image: "traefik:v2.5.1"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+    container_name: "traefik"
+    command:
+      - "--log.level=DEBUG"
+      - "--ping"
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.secure.address=:443"
+      # - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      # - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      # - "--certificatesresolvers.myresolver.acme.email=tony.brekhov@gmail.com"
+      # - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "443:443"
+    labels:
+      - "traefik.http.middlewares.test-compress.compress=true"
+      - "traefik.http.middlewares.auth.basicauth.users=abrekhov:$$1$$w6OraKMT$$1jLUBTthmJK8MI/yWM2y01"
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`localhost`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=test-compress,auth"
+      # openssl passwd -1
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+  ml-serving:
+    image: quay.io/codait/max-resnet-50
+    ports:
+      - 5000:5000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.test-compress.compress=true" 
+      - "traefik.http.routers.ml.rule=Host(`localhost`) && PathPrefix(`/ml`)"
+      - "traefik.http.middlewares.test-stripprefix.stripprefix.prefixes=/ml" # declare middleware
+      # - "traefik.http.routers.ml.loadbalancer.server.port=8500"
+      - "traefik.http.routers.ml.middlewares=test-compress,test-stripprefix" # apply middleware
