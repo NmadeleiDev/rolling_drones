@@ -42,7 +42,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.middlewares.test-compress.compress=true" 
-      - "traefik.http.routers.ml.rule=Host(`localhost`) && PathPrefix(`/ml`)"
+      - "traefik.http.routers.ml.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/ml`)"
       - "traefik.http.middlewares.test-stripprefix.stripprefix.prefixes=/ml" # declare middleware
       - "traefik.http.routers.ml.middlewares=test-compress,test-stripprefix" # apply middleware
   front:
@@ -52,15 +52,12 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.middlewares.test-compress.compress=true" 
-      - "traefik.http.routers.front.rule=Host(`localhost`)"
+      - "traefik.http.routers.front.rule=Host(`${HOST:-localhost}`)"
       - "traefik.http.routers.front.middlewares=test-compress" # apply middleware
   back:
     image: vad1mo/hello-world-rest
     labels:
       - "traefik.enable=true"
       - "traefik.http.middlewares.test-compress.compress=true" 
-      - "traefik.http.routers.back.rule=Host(`localhost`) && PathPrefix(`/backend`)"
+      - "traefik.http.routers.back.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/backend`)"
       - "traefik.http.routers.back.middlewares=test-compress" # apply middleware
-      - traefik.frontend.rule=Host:sample.127.0.0.1.xip.io; Path:/api/webhook, /api/token ,PathPrefix:/
-      - traefik.frontend.entryPoints=web
-      - traefik.frontend.priority = 1
