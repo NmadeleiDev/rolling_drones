@@ -1,0 +1,21 @@
+:root {
+  --bg-light: #2d3268;
+  --bg-dark: #1a1f4b;
+  --accent-main-light: #2356dc;
+  --accent-main-dark: #1e3078;
+  --accent1-light: #165389;
+  --accent1-dark: #1d3a70;
+  --accent2-light: #213ea1;
+  --accent2-dark: #1e3076;
+  --text-main: #fff;
+}
+
+.main {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  padding: 1rem;
+  background: linear-gradient(125deg, var(--bg-light), var(--bg-dark));
+  text-align: center;
+  color: var(--text-main);
+}
