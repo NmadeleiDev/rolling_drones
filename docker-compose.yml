@@ -55,9 +55,23 @@ services:
       - "traefik.http.routers.front.rule=Host(`${HOST:-localhost}`)"
       - "traefik.http.routers.front.middlewares=test-compress" # apply middleware
   back:
-    image: vad1mo/hello-world-rest
+    image: golang:alpine # DEV
+    command: sh # DEV
+    volumes: 
+      - "./back:/app"
     labels:
       - "traefik.enable=true"
       - "traefik.http.middlewares.test-compress.compress=true" 
-      - "traefik.http.routers.back.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/backend`)"
+      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api" # declare middleware
+      - "traefik.http.routers.back.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.back.middlewares=test-compress,api-stripprefix" # apply middleware
       - "traefik.http.routers.back.middlewares=test-compress" # apply middleware
+  db:
+    image: yandex/clickhouse-server
+    ports:
+      - 9000:9000
+    labels: # endpoint only for dev
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.test-compress.compress=true" 
+      - "traefik.http.routers.db.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/db`)"
+      - "traefik.http.routers.db.middlewares=test-compress" # apply middleware
