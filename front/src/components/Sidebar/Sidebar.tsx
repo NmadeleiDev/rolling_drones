@@ -1,6 +1,6 @@
 import { Grid, makeStyles } from "@material-ui/core";
-import { backgroundColor } from "../../theme";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import cn from "classnames";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -11,7 +11,6 @@ const useStyles = makeStyles((theme) => ({
     width: 165,
     padding: "1rem",
     paddingTop: "0.5rem",
-    // background: `linear-gradient(20deg, ${backgroundColor.bgLight}, ${backgroundColor.bgDark})`,
   },
   link: {
     color: theme.palette.text.secondary,
@@ -25,6 +24,10 @@ const useStyles = makeStyles((theme) => ({
       color: theme.palette.text.primary,
       textShadow: "0 0 3px #fff",
     },
+  },
+  active: {
+    color: theme.palette.text.primary,
+    textShadow: "0 0 3px #fff",
   },
 }));
 
@@ -45,6 +48,7 @@ const pages = [
 
 function Sidebar() {
   const styles = useStyles();
+  const location = useLocation();
   return (
     <Grid
       container
@@ -54,7 +58,15 @@ function Sidebar() {
       className={styles.root}
     >
       {pages.map((page) => (
-        <Link to={page.to} className={styles.link} key={page.name}>
+        <Link
+          className={
+            location.pathname.match(page.to)
+              ? cn(styles.link, styles.active)
+              : styles.link
+          }
+          key={page.name}
+          to={page.to}
+        >
           {page.name}
         </Link>
       ))}

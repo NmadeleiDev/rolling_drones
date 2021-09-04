@@ -1,7 +1,7 @@
 import { makeStyles } from "@material-ui/core";
 import { ChartData } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { primaryColor, secondaryColor } from "../../theme";
+// import { primaryColor, secondaryColor } from "../../theme";
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -53,26 +53,26 @@ const mockData: ChartData = {
 
 function Chart(props: ChartProps) {
   const styles = useStyles();
-  const setGradientColor = (canvas: HTMLCanvasElement, color: string) => {
-    const gradient = canvas
-      .getContext("2d")
-      ?.createLinearGradient(0, 0, 700, 400);
-    if (!gradient) return;
-    gradient.addColorStop(0, color);
-    gradient.addColorStop(1, "white");
-    return gradient;
-  };
+  // const setGradientColor = (canvas: HTMLCanvasElement, color: string) => {
+  //   const gradient = canvas
+  //     .getContext("2d")
+  //     ?.createLinearGradient(0, 0, 700, 400);
+  //   if (!gradient) return;
+  //   gradient.addColorStop(0, color);
+  //   gradient.addColorStop(1, "white");
+  //   return gradient;
+  // };
 
   const getChartData = (canvas: HTMLCanvasElement) => {
     const data = props.data || mockData;
-    if (data.datasets) {
-      let colors = [primaryColor.main, secondaryColor.main];
-      data.datasets.forEach((set, i) => {
-        // set.backgroundColor = setGradientColor(canvas, colors[i]);
-        // set.borderColor = colors[i];
-        set.borderWidth = 2;
-      });
-    }
+    // if (data.datasets) {
+    // let colors = [primaryColor.main, secondaryColor.main];
+    // data.datasets.forEach((set, i) => {
+    //   // set.backgroundColor = setGradientColor(canvas, colors[i]);
+    //   // set.borderColor = colors[i];
+    //   set.borderWidth = 2;
+    // });
+    // }
     return data;
   };
   return (

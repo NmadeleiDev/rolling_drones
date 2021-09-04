@@ -1,13 +1,12 @@
 import { Container, makeStyles } from "@material-ui/core";
 
 export interface PageProps {
-  children: JSX.Element;
+  children: JSX.Element | JSX.Element[];
 }
 
 const useStyles = makeStyles((theme) => ({
   container: {
-    width: "100vw",
-    padding: "0 0 0 200px",
+    padding: "0 50px 0 120px",
   },
 }));
 
