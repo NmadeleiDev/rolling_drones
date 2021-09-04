@@ -10,6 +10,7 @@ from db import DbManager
 
 forecaset_ds_suffix = 'forecast'
 fact_ds_suffix = 'fact'
+suffix_link = '__'
 
 def success_response(msg: any):
     return {'error': None, 'data': msg}
@@ -42,8 +43,8 @@ def apply_handlers(app: FastAPI):
 
         # df.to_csv('test.csv')
         db = DbManager()
-        ok1 = db.save_dataset(select_cols_for_forecasts_df(df_forecast), name + '_' + forecaset_ds_suffix, do_upsert=False)
-        ok2 = db.save_dataset(select_cols_for_facts_df(df_fact), name + '_' + fact_ds_suffix, do_upsert=False)
+        ok1 = db.save_dataset(select_cols_for_forecasts_df(df_forecast), name + suffix_link + forecaset_ds_suffix, do_upsert=False)
+        ok2 = db.save_dataset(select_cols_for_facts_df(df_fact), name + suffix_link + fact_ds_suffix, do_upsert=False)
         if ok1 and ok2:
             return success_response('Saved {} with name "{}"'.format(', '.join([file_forecast.filename, file_fact.filename]), name))
         else:
@@ -69,8 +70,8 @@ def apply_handlers(app: FastAPI):
 
         # df.to_csv('test.csv')
         db = DbManager()
-        ok1 = db.save_dataset(select_cols_for_forecasts_df(df_forecast), name + '_' + forecaset_ds_suffix, do_upsert=True)
-        ok2 = db.save_dataset(select_cols_for_facts_df(df_fact), name + '_' + fact_ds_suffix, do_upsert=True)
+        ok1 = db.save_dataset(select_cols_for_forecasts_df(df_forecast), name + suffix_link + forecaset_ds_suffix, do_upsert=True)
+        ok2 = db.save_dataset(select_cols_for_facts_df(df_fact), name + suffix_link + fact_ds_suffix, do_upsert=True)
         if ok1 and ok2:
             return success_response('Saved {} with name "{}"'.format(', '.join([file_forecast.filename, file_fact.filename]), name))
         else:
@@ -83,7 +84,7 @@ def apply_handlers(app: FastAPI):
             return error_response('Failed to save files: {}'.format(err))
 
 def read_file_to_dataframe(filename: str, data) -> pd.DataFrame:
-    ext = filename.split('.')[-1]
+    ext = filename.split('.')[-1].lower()
     if ext == 'csv':
         df = pd.read_csv(data)
     if ext == 'tsv':

@@ -26,10 +26,10 @@ class DbManager():
 
     def get_datasets(self) -> list:
         with self.engine.connect() as conn:
-            result = conn.execution_options(stream_results=True).execute(text(
+            result = conn.execute(text(
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = '{}'".format(self.datasets_schema_name)
             ))
-        return [x for x in result]
+        return [x['table_name'] for x in result.fetchall()]
 
     def save_dataset(self, df: pd.DataFrame, ds_name: str, do_upsert=False) -> bool:
         conn = self.engine.connect()
