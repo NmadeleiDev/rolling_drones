@@ -31,18 +31,14 @@ class DbManager():
             ))
         return [x for x in result]
 
-    def save_dataset(self, df: pd.DataFrame, ds_name: str):
+    def save_dataset(self, df: pd.DataFrame, ds_name: str, do_upsert=False) -> bool:
         conn = self.engine.connect()
+        res = False
         try:
-            df.to_sql(ds_name, conn, if_exists='replace', schema=self.datasets_schema_name)
+            df.to_sql(ds_name, conn, if_exists='replace' if do_upsert is False else 'append', schema=self.datasets_schema_name)
+            res = True
         except Exception as e:
             logging.error("Failed to write df: {}".format(e))
         conn.close
+        return res
 
-    def update_dataset(self, df: pd.DataFrame, ds_name: str):
-        conn = self.engine.connect()
-        try:
-            df.to_sql(ds_name, conn, if_exists='append', schema=self.datasets_schema_name)
-        except Exception as e:
-            logging.error("Failed to write df: {}".format(e))
-        conn.close
