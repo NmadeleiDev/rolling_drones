@@ -72,12 +72,15 @@ services:
       - "traefik.http.routers.back.middlewares=test-compress,back-stripprefix" # apply middleware
       # - "traefik.http.routers.back.middlewares=test-compress" # apply middleware
   db:
-    image: yandex/clickhouse-server
-    ports:
-      - 9000:9000
+    image: postgres
+    restart: always
+    environment:
+      # POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     labels: # endpoint only for dev
       - "traefik.enable=true"
       - "traefik.http.middlewares.test-compress.compress=true" 
       - "traefik.http.middlewares.db-stripprefix.stripprefix.prefixes=/db" # declare middleware
       - "traefik.http.routers.db.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/db`)"
       - "traefik.http.routers.db.middlewares=test-compress,db-stripprefix" # apply middleware
+    # check with docker run -it --rm --network rolling_drones_default postgres psql -h db -U postgres
