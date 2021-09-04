@@ -5,10 +5,10 @@ from typing import Optional
 
 import pandas as pd
 
-from .db import DbManager
+from db import DbManager
 
 def apply_handlers(app: FastAPI):
-    @app.get("/test", status_code=200)
+    @app.get("/", status_code=200)
     def test_handler():
         return {'data': 'OK!', 'error': None}
 

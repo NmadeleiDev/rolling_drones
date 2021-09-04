@@ -6,7 +6,6 @@ import psycopg2
 import pandas as pd
 from sqlalchemy import create_engine, text
 
-
 class DbManager():
     datasets_schema_name = 'user_datasets'
 

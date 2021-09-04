@@ -2,7 +2,7 @@ version: '3'
 services: 
   dataloader:
     build:
-      context: ./src
+      context: ./dataloader
       dockerfile: Dockerfile
     volumes:
       - /etc/localtime:/etc/localtime/:ro
@@ -59,16 +59,16 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./letsencrypt:/letsencrypt"
-  ml-serving:
-    image: quay.io/codait/max-resnet-50
-    volumes: 
-      - "./ml:/app"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.middlewares.test-compress.compress=true" 
-      - "traefik.http.routers.ml.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/ml`)"
-      - "traefik.http.middlewares.test-stripprefix.stripprefix.prefixes=/ml" # declare middleware
-      - "traefik.http.routers.ml.middlewares=test-compress,test-stripprefix" # apply middleware
+  # ml-serving:
+  #   image: quay.io/codait/max-resnet-50
+  #   volumes: 
+  #     - "./ml:/app"
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.middlewares.test-compress.compress=true" 
+  #     - "traefik.http.routers.ml.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/ml`)"
+  #     - "traefik.http.middlewares.test-stripprefix.stripprefix.prefixes=/ml" # declare middleware
+  #     - "traefik.http.routers.ml.middlewares=test-compress,test-stripprefix" # apply middleware
   front:
     image: nginx:alpine
     volumes: 
