@@ -2,7 +2,7 @@ import logging
 from fastapi import FastAPI, Response, File, UploadFile, Form, status
 
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union
 
 import pandas as pd
 
@@ -31,57 +31,40 @@ def apply_handlers(app: FastAPI):
 
     @app.post("/data", status_code=200)
     async def save_dataset(response: Response,
-                            file_forecast: UploadFile = Form('file_forecast'),
-                            file_fact: UploadFile = Form('file_fact'),
+                            file_forecast: Optional[UploadFile] = Form('file_forecast'),
+                            file_fact: Optional[UploadFile] = Form('file_fact'),
                             name: str = Form('name')):
-        df_forecast = read_file_to_dataframe(file_forecast.filename, await file_forecast.read())
-        df_fact = read_file_to_dataframe(file_fact.filename, await file_fact.read())
-
-        if df_forecast is None or df_fact is None:
-            response.status_code = status.HTTP_400_BAD_REQUEST
-            return error_response('Unknown file extension: {}'.format(file_forecast.filename if df_forecast is None else file_fact.filename))
-
-        # df.to_csv('test.csv')
-        db = DbManager()
-        ok1 = db.save_dataset(select_cols_for_forecasts_df(df_forecast), name + suffix_link + forecaset_ds_suffix, do_upsert=False)
-        ok2 = db.save_dataset(select_cols_for_facts_df(df_fact), name + suffix_link + fact_ds_suffix, do_upsert=False)
-        if ok1 and ok2:
-            return success_response('Saved {} with name "{}"'.format(', '.join([file_forecast.filename, file_fact.filename]), name))
-        else:
-            err = []
-            if ok1 is False:
-                err.append(file_forecast.filename)
-            if ok2 is False:
-                err.append(file_fact.filename)
-            response.status_code = status.HTTP_400_BAD_REQUEST
-            return error_response('Failed to save files: {}'.format(err))
+        return await save_files(file_forecast, file_fact, response, name, False)
 
     @app.put("/data", status_code=200)
-    async def update_dataset(response: Response,
-                            file_forecast: UploadFile = Form('file_forecast'),
-                            file_fact: UploadFile = Form('file_fact'),
+    async def save_dataset(response: Response,
+                            file_forecast: Optional[UploadFile] = Form('file_forecast'),
+                            file_fact: Optional[UploadFile] = Form('file_fact'),
                             name: str = Form('name')):
+        return await save_files(file_forecast, file_fact, response, name, True)
+
+async def save_files(file_forecast: any, file_fact: any, response: Response, name: str, do_upsert=False):
+    db = DbManager()
+
+    ok1, ok2 = None, None
+    saved = []
+    if hasattr(file_forecast, 'filename'):
         df_forecast = read_file_to_dataframe(file_forecast.filename, await file_forecast.read())
+        if df_forecast is None:
+            response.status_code = status.HTTP_400_BAD_REQUEST
+            return error_response('Unknown file extension: {}'.format(file_forecast.filename))
+        ok1 = db.save_dataset(select_cols_for_forecasts_df(df_forecast), name + suffix_link + forecaset_ds_suffix, do_upsert=do_upsert)
+        saved.append(file_forecast.filename)
+
+    if hasattr(file_fact, 'filename'):
         df_fact = read_file_to_dataframe(file_fact.filename, await file_fact.read())
-
-        if df_forecast is None or df_fact is None:
+        if file_fact is None:
             response.status_code = status.HTTP_400_BAD_REQUEST
-            return error_response('Unknown file extension: {}'.format(file_forecast.filename if df_forecast is None else file_fact.filename))
+            return error_response('Unknown file extension: {}'.format(file_fact.filename))
+        ok2 = db.save_dataset(select_cols_for_facts_df(df_fact), name + suffix_link + fact_ds_suffix, do_upsert=do_upsert)
+        saved.append(file_fact.filename)
 
-        # df.to_csv('test.csv')
-        db = DbManager()
-        ok1 = db.save_dataset(select_cols_for_forecasts_df(df_forecast), name + suffix_link + forecaset_ds_suffix, do_upsert=True)
-        ok2 = db.save_dataset(select_cols_for_facts_df(df_fact), name + suffix_link + fact_ds_suffix, do_upsert=True)
-        if ok1 and ok2:
-            return success_response('Saved {} with name "{}"'.format(', '.join([file_forecast.filename, file_fact.filename]), name))
-        else:
-            err = []
-            if ok1 is False:
-                err.append(file_forecast.filename)
-            if ok2 is False:
-                err.append(file_fact.filename)
-            response.status_code = status.HTTP_400_BAD_REQUEST
-            return error_response('Failed to save files: {}'.format(err))
+    return success_response('Saved {} with name "{}"'.format(', '.join(saved), name))
 
 def read_file_to_dataframe(filename: str, data) -> pd.DataFrame:
     ext = filename.split('.')[-1].lower()
