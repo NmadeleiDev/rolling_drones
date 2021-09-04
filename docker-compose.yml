@@ -56,9 +56,9 @@ services:
       - "traefik.http.routers.front.middlewares=test-compress" # apply middleware
   back:
     image: golang:alpine # DEV
-    command: sh # DEV
+    command: sh -c "cd /app && go run main.go" # DEV
     volumes: 
-      - "./back:/app"
+      - "./back:/app" # DEV
     labels:
       - "traefik.enable=true"
       - "traefik.http.middlewares.test-compress.compress=true" 
