@@ -37,7 +37,7 @@ func Upload(c echo.Context) error {
 	// Get avatar
 	sef, err := c.FormFile("social_economy_forecast")
 	if err != nil {
-		return err
+		return fmt.Errorf("file not found: %v", err)
 	}
 
 	// Source
