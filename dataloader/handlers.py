@@ -7,7 +7,7 @@ from typing import Optional, Union
 
 import pandas as pd
 import numpy as np
-import json
+import re
 
 from db import DbManager
 
@@ -107,10 +107,45 @@ def read_file_to_dataframe(filename: str, data) -> pd.DataFrame:
 
     return df.convert_dtypes()
 
-def select_cols_for_forecasts_df(df: pd.DataFrame) -> pd.DataFrame:
-    take_col_idx = [0, 2, 3, 4, 6, 9, 12]
-    return pd.DataFrame(df.to_numpy()[:, take_col_idx])
-        
 def select_cols_for_facts_df(df: pd.DataFrame) -> pd.DataFrame:
-    take_col_idx = [1, 5]
-    return pd.DataFrame(df.to_numpy()[:, take_col_idx])
+    facts_regex = re.compile('(Наименование\s+?показателя|Исполнено,\s+?бюджет\s+?субъекта\s+?РФ)', re.IGNORECASE)
+    
+    facts_line = None
+    for row in df.fillna('').astype(str).values:
+        matches = [facts_regex.search(x) is not None for x in row]
+        if len([x for x in matches if x is True]) == 2:
+            facts_line = matches.copy()
+            break
+            
+    return df.T.iloc[np.argwhere(facts_line).reshape((-1,))].T
+
+def select_cols_for_forecasts_df(df: pd.DataFrame) -> pd.DataFrame:
+    facts_regex = re.compile('(\d{4}\s+?год\s+?)?(факт|оценка)', re.IGNORECASE)
+    var_name_regex = re.compile('базовый', re.IGNORECASE)
+    var_idx_regex = re.compile('вариант\s1', re.IGNORECASE)
+    
+    facts_line = None
+    vars_line = None
+    for row in df.fillna('').astype(str).values:
+        matches = [facts_regex.search(x) is not None for x in row]
+        if len([x for x in matches if x is True]) == 3:
+            facts_line = matches.copy()
+            
+        matches = [var_name_regex.search(x) is not None for x in row]
+        if len([x for x in matches if x is True]) == 3:
+            vars_line = matches.copy()
+            
+        matches = [var_idx_regex.search(x) is not None for x in row]
+        if vars_line is None and len([x for x in matches if x is True]) == 3:
+            vars_line = matches.copy()
+            
+        if facts_line is not None and vars_line is not None:
+            break
+
+    
+    if facts_line is None or vars_line is None:
+        return None
+            
+    take_idxs = np.logical_or(facts_line, vars_line)
+    take_idxs[0] = True
+    return df.T.iloc[np.argwhere(take_idxs).reshape((-1,))].T
