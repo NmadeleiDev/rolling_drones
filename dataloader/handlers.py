@@ -27,7 +27,7 @@ def apply_handlers(app: FastAPI):
     def get_datasets(response: Response):
         db = DbManager()
         dss = db.get_datasets()
-        return success_response(dss)
+        return success_response([x.split(suffix_link) for x in dss])
 
     @app.post("/data", status_code=200)
     async def save_dataset(response: Response,
