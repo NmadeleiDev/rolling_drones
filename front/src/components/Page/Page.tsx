@@ -5,17 +5,15 @@ export interface PageProps {
 }
 
 const useStyles = makeStyles((theme) => ({
-  root: {
+  container: {
     width: "100vw",
-    height: "100vh",
-    padding: "200px 0 0 0",
+    padding: "0 0 0 200px",
   },
 }));
 
 function Page({ children }: PageProps) {
   const styles = useStyles();
-  console.log("[Page] render");
-  return <Container className={styles.root}>{children}</Container>;
+  return <Container className={styles.container}>{children}</Container>;
 }
 
 export default Page;

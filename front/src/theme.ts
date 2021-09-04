@@ -6,15 +6,15 @@ export const backgroundColor = {
   foreground: "#fdfdfd",
 };
 export const primaryColor = {
-  light: "#2356dc",
-  main: "#1e3078",
-  dark: "#111c47",
-  contrastText: "#fff",
+  light: "#DAF7A6",
+  main: "#BFD891",
+  dark: "#A4B97D",
+  contrastText: "#000",
 };
 export const secondaryColor = {
-  light: "#165389",
-  main: "#1d3a70",
-  dark: "#142950",
+  light: "#FF5733",
+  main: "#BF4126",
+  dark: "#802B1A",
   contrastText: "#fff",
 };
 
