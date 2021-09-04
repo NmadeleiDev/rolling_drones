@@ -7,12 +7,14 @@ from typing import Optional, Union
 
 import pandas as pd
 import numpy as np
-import re
 
-from db import DbManager
+from db_manager import DbManager
+from file_parsing import *
 
 forecaset_ds_suffix = 'forecast'
 fact_ds_suffix = 'fact'
+income_ds_suffix = 'income'
+spent_ds_suffix = 'spent'
 suffix_link = '__'
 
 def success_response(msg: any):
@@ -32,7 +34,7 @@ def apply_handlers(app: FastAPI):
         dss = db.get_datasets()
         names = [parse_file_name(x) for x in dss]
         years = set([x['year'] for x in names])
-        result = [{'year': y, 'forecast': bool(np.any([(x['year'] == y and x['type'] == 'forecast') for x in names if len(x.keys()) == 2]) == True), 'fact': bool(np.any([x['year'] == y and x['type'] == 'fact' for x in names if len(x.keys()) == 2]) == True)} for y in years]
+        result = [{'year': y, 'forecast': bool(np.any([(x['year'] == y and x['type'] == forecaset_ds_suffix) for x in names if len(x.keys()) == 2]) == True), 'fact': bool(np.any([x['year'] == y and x['type'] == income_ds_suffix for x in names if len(x.keys()) == 2]) == True) and bool(np.any([x['year'] == y and x['type'] == spent_ds_suffix for x in names if len(x.keys()) == 2]) == True)} for y in years]
         return success_response(result)
 
     @app.post("/data", status_code=200)
@@ -40,9 +42,6 @@ def apply_handlers(app: FastAPI):
                             file_forecast: Optional[UploadFile] = Form('file_forecast'),
                             file_fact: Optional[UploadFile] = Form('file_fact'),
                             year: str = Form(None)):
-        if name is None:
-            response.status_code = status.HTTP_400_BAD_REQUEST
-            return error_response('Field "name" must be defined')
         if year is None:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return error_response('Field "year" must be defined')
@@ -77,75 +76,21 @@ async def save_files(file_forecast: any, file_fact: any, response: Response, yea
         if df_forecast is None:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return error_response('Unknown file extension: {}'.format(file_forecast.filename))
+        df_forecast = list(df_forecast.values())[0]
         db.save_dataset(select_cols_for_forecasts_df(df_forecast), make_table_name(year, forecaset_ds_suffix), do_upsert=do_upsert)
         saved.append(file_forecast.filename)
 
     if hasattr(file_fact, 'filename'):
         df_fact = read_file_to_dataframe(file_fact.filename, await file_fact.read())
-        if file_fact is None:
+        if df_fact is None:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return error_response('Unknown file extension: {}'.format(file_fact.filename))
-        db.save_dataset(select_cols_for_facts_df(df_fact), make_table_name(year, fact_ds_suffix), do_upsert=do_upsert)
+        
+        for k, v in df_fact.items():
+            if re.search('доходы', k, re.IGNORECASE) is not None:
+                db.save_dataset(select_cols_for_facts_df(v), make_table_name(year, income_ds_suffix), do_upsert=do_upsert)
+            elif re.search('расходы', k, re.IGNORECASE) is not None:
+                db.save_dataset(select_cols_for_facts_df(v), make_table_name(year, spent_ds_suffix), do_upsert=do_upsert)
         saved.append(file_fact.filename)
 
     return success_response('Saved {} for year "{}"'.format(', '.join(saved), year))
-
-def read_file_to_dataframe(filename: str, data) -> pd.DataFrame:
-    ext = filename.split('.')[-1].lower()
-    if ext == 'csv':
-        df = pd.read_csv(data)
-    if ext == 'tsv':
-        df = pd.read_csv(data, delimiter='\t')
-    elif ext == 'xlsx' or ext == 'xls':
-        df = pd.read_excel(data)
-    else:
-        return None
-
-    if isinstance(df.columns, pd.MultiIndex):
-        logging.info(df.columns)
-        df.columns = ['__'.join(x) for x in df.columns.to_flat_index()]
-
-    return df.convert_dtypes()
-
-def select_cols_for_facts_df(df: pd.DataFrame) -> pd.DataFrame:
-    facts_regex = re.compile('(Наименование\s+?показателя|Исполнено,\s+?бюджет\s+?субъекта\s+?РФ)', re.IGNORECASE)
-    
-    facts_line = None
-    for row in df.fillna('').astype(str).values:
-        matches = [facts_regex.search(x) is not None for x in row]
-        if len([x for x in matches if x is True]) == 2:
-            facts_line = matches.copy()
-            break
-            
-    return df.T.iloc[np.argwhere(facts_line).reshape((-1,))].T
-
-def select_cols_for_forecasts_df(df: pd.DataFrame) -> pd.DataFrame:
-    facts_regex = re.compile('(\d{4}\s+?год\s+?)?(факт|оценка)', re.IGNORECASE)
-    var_name_regex = re.compile('базовый', re.IGNORECASE)
-    var_idx_regex = re.compile('вариант\s1', re.IGNORECASE)
-    
-    facts_line = None
-    vars_line = None
-    for row in df.fillna('').astype(str).values:
-        matches = [facts_regex.search(x) is not None for x in row]
-        if len([x for x in matches if x is True]) == 3:
-            facts_line = matches.copy()
-            
-        matches = [var_name_regex.search(x) is not None for x in row]
-        if len([x for x in matches if x is True]) == 3:
-            vars_line = matches.copy()
-            
-        matches = [var_idx_regex.search(x) is not None for x in row]
-        if vars_line is None and len([x for x in matches if x is True]) == 3:
-            vars_line = matches.copy()
-            
-        if facts_line is not None and vars_line is not None:
-            break
-
-    
-    if facts_line is None or vars_line is None:
-        return None
-            
-    take_idxs = np.logical_or(facts_line, vars_line)
-    take_idxs[0] = True
-    return df.T.iloc[np.argwhere(take_idxs).reshape((-1,))].T

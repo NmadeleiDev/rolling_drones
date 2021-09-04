@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from db import DbManager
+from db_manager import DbManager
 from handlers import apply_handlers
 
 db = DbManager()
