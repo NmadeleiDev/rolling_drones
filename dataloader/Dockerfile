@@ -1,9 +1,11 @@
 FROM python:3.9.7-slim
 
-RUN apt update && apt install -y uvicorn && pip install psycopg2-binary sqlalchemy fastapi[all] pandas
+RUN apt update && apt install -y uvicorn && pip install psycopg2-binary sqlalchemy fastapi[all] pandas openpyxl
 RUN mkdir -p /app/
 
 COPY . /app
 WORKDIR /app
 
-CMD uvicorn main:app --reload --port 2222
+EXPOSE 2222
+
+CMD uvicorn main:app --reload --port 2222 --host 0.0.0.0 --log-level debug

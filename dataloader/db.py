@@ -5,6 +5,7 @@ import psycopg2
 
 import pandas as pd
 from sqlalchemy import create_engine, text
+from sqlalchemy.schema import CreateSchema, CreateTable
 
 class DbManager():
     datasets_schema_name = 'user_datasets'
@@ -18,8 +19,10 @@ class DbManager():
 
         self.engine = create_engine('postgresql+psycopg2://{}:{}@{}:{}/{}'.format(self.user, self.password, self.host, self.port, self.db_name), pool_recycle=3600);
 
-    # def create_tables(self):
-    #     self.cursor.execute('CREATE SCHEMA IS NOT EXISTS {}'.format(self.datasets_schema_name))
+    def create_tables(self):
+        conn = self.engine.connect()
+        if not conn.dialect.has_schema(conn, self.datasets_schema_name):
+            self.engine.execute(CreateSchema(self.datasets_schema_name))
 
     def get_datasets(self) -> list:
         with self.engine.connect() as conn:

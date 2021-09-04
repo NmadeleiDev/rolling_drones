@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 
+from db import DbManager
 from handlers import apply_handlers
 
-app = FastAPI()
+db = DbManager()
+db.create_tables()
 
-@app.get("/test", status_code=200)
-def test_handler():
-    return {'data': 'OK!', 'error': None}
+app = FastAPI()
 
 apply_handlers(app)
