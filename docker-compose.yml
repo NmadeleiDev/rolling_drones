@@ -14,7 +14,7 @@ services:
       - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.endpoint=unix:///var/run/docker.sock"
-      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.exposedbydefault=true"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.secure.address=:443"
       # - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
@@ -39,6 +39,8 @@ services:
       - "./letsencrypt:/letsencrypt"
   ml-serving:
     image: quay.io/codait/max-resnet-50
+    volumes: 
+      - "./ml:/app"
     labels:
       - "traefik.enable=true"
       - "traefik.http.middlewares.test-compress.compress=true" 
@@ -57,16 +59,18 @@ services:
   back:
     image: abrekhov/rolling_drones_back
     # image: golang:alpine # DEV
-    command: sh -c "cd /app && go run main.go" # DEV
-    volumes: 
-      - "./back:/app" # DEV
+    ports: 
+      - "1323:1323"
+    # command: sh -c "cd /app && go run main.go" # DEV
+    # volumes: 
+    #   - "./back:/app" # DEV
     labels:
       - "traefik.enable=true"
       - "traefik.http.middlewares.test-compress.compress=true" 
-      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api" # declare middleware
-      - "traefik.http.routers.back.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.back.middlewares=test-compress,api-stripprefix" # apply middleware
-      - "traefik.http.routers.back.middlewares=test-compress" # apply middleware
+      - "traefik.http.middlewares.back-stripprefix.stripprefix.prefixes=/back" # declare middleware
+      - "traefik.http.routers.back.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/back`)"
+      - "traefik.http.routers.back.middlewares=test-compress,back-stripprefix" # apply middleware
+      # - "traefik.http.routers.back.middlewares=test-compress" # apply middleware
   db:
     image: yandex/clickhouse-server
     ports:
@@ -74,5 +78,6 @@ services:
     labels: # endpoint only for dev
       - "traefik.enable=true"
       - "traefik.http.middlewares.test-compress.compress=true" 
+      - "traefik.http.middlewares.db-stripprefix.stripprefix.prefixes=/db" # declare middleware
       - "traefik.http.routers.db.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/db`)"
-      - "traefik.http.routers.db.middlewares=test-compress" # apply middleware
+      - "traefik.http.routers.db.middlewares=test-compress,db-stripprefix" # apply middleware
