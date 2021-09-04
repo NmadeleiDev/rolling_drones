@@ -55,7 +55,8 @@ services:
       - "traefik.http.routers.front.rule=Host(`${HOST:-localhost}`)"
       - "traefik.http.routers.front.middlewares=test-compress" # apply middleware
   back:
-    image: golang:alpine # DEV
+    image: abrekhov/rolling_drones_back
+    # image: golang:alpine # DEV
     command: sh -c "cd /app && go run main.go" # DEV
     volumes: 
       - "./back:/app" # DEV
