@@ -1,11 +1,5 @@
 import { Grid, makeStyles } from "@material-ui/core";
 import Sidebar from "./components/Sidebar/Sidebar";
-// import {
-//   BrowserRouter as Router,
-//   Switch,
-//   Route,
-//   Redirect,
-// } from "react-router-dom";
 import { backgroundColor } from "./theme";
 import Report from "./components/Report/Report";
 import Upload from "./components/Upload/Upload";
@@ -16,9 +10,10 @@ import {
   Route,
   Redirect,
 } from "react-router-dom";
+import Header from "./components/Header/Header";
 
 const useStyles = makeStyles((theme) => ({
-  root: {
+  grid: {
     position: "relative",
     width: "100vw",
     height: "100vh",
@@ -32,20 +27,21 @@ const useStyles = makeStyles((theme) => ({
 function App() {
   const styles = useStyles();
   return (
-    <Grid container className={styles.root}>
+    <Grid container alignItems="flex-start" className={styles.grid}>
+      <Header />
       <Router>
         <Sidebar />
         <Switch>
-          <Route path="/report">
-            <Report />
-          </Route>
           <Route path="/upload">
             <Upload />
+          </Route>
+          <Route path="/report">
+            <Report />
           </Route>
           <Route path="/settings">
             <Settings />
           </Route>
-          <Redirect from="/" to="/report" />
+          <Redirect from="/" to="/upload" />
         </Switch>
       </Router>
     </Grid>

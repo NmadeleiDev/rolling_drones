@@ -1,4 +1,5 @@
 import { makeStyles } from "@material-ui/core";
+import Chart from "../Chart/Chart";
 import Page from "../Page/Page";
 
 const useStyles = makeStyles((theme) => ({
@@ -9,7 +10,9 @@ function Report() {
   const styles = useStyles();
   return (
     <Page>
-      <div>Report</div>
+      <>
+        <Chart />
+      </>
     </Page>
   );
 }

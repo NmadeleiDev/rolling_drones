@@ -6,7 +6,7 @@ const useStyles = makeStyles((theme) => ({
   root: {
     position: "fixed",
     left: 0,
-    top: 0,
+    top: 60,
     minHeight: "100vh",
     width: 165,
     padding: "1rem",
@@ -30,12 +30,12 @@ const useStyles = makeStyles((theme) => ({
 
 const pages = [
   {
-    to: "report",
-    name: "отчёт",
-  },
-  {
     to: "upload",
     name: "загрузить данные",
+  },
+  {
+    to: "report",
+    name: "отчёт",
   },
   {
     to: "settings",
