@@ -161,8 +161,18 @@ function DataGrid() {
   const [open, setOpen] = useState(false);
 
   const addRow = (value: IRow) => {
-    if (rows.find((row) => +row.year === +value.year)) return;
-    setRows([...rows, value].sort((a, b) => +a.year - +b.year));
+    const index = rows.findIndex((row) => +row.year === +value.year);
+    console.log(index);
+    if (index >= 0) {
+      setRows(
+        rows
+          .slice(0, index)
+          .concat([value])
+          .concat(rows.slice(index + 1))
+      );
+    } else {
+      setRows([...rows, value].sort((a, b) => +a.year - +b.year));
+    }
   };
 
   const openModalHandler = () => {
@@ -216,7 +226,7 @@ function DataGrid() {
           </TableHead>
           <TableBody>
             {rows.map((row) => (
-              <Row row={row} key={row.year} />
+              <Row row={row} updateRows={addRow} key={row.year} />
             ))}
           </TableBody>
         </Table>

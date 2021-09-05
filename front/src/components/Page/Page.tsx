@@ -7,6 +7,10 @@ export interface PageProps {
 const useStyles = makeStyles((theme) => ({
   container: {
     padding: "0 50px 0 120px",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    alignItems: "center",
   },
 }));
 
