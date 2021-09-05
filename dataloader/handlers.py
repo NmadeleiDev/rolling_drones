@@ -87,9 +87,9 @@ async def save_files(file_forecast: any, file_fact: any, response: Response, yea
             return error_response('Unknown file extension: {}'.format(file_fact.filename))
         
         for k, v in df_fact.items():
-            if re.search('доходы', k, re.IGNORECASE) is not None:
+            if re.search('доходы', k, re.IGNORECASE) is not None and isinstance(v, pd.DataFrame):
                 db.save_dataset(select_cols_for_facts_df(v), make_table_name(year, income_ds_suffix), do_upsert=do_upsert)
-            elif re.search('расходы', k, re.IGNORECASE) is not None:
+            elif re.search('расходы', k, re.IGNORECASE) is not None and isinstance(v, pd.DataFrame):
                 db.save_dataset(select_cols_for_facts_df(v), make_table_name(year, spent_ds_suffix), do_upsert=do_upsert)
         saved.append(file_fact.filename)
 
