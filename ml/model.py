@@ -6,7 +6,6 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten, Input, Lambda
 import re
 
-
 def find_data(frame, features):
         rows = list(frame[frame.columns[1]])
         col = []
@@ -41,7 +40,8 @@ features1 = sorted(['Численность постоянного населе�
                     'Уровень зарегистрированной безработицы (к численности экономически активного населения) (среднегодовая)'])
 
 input_ = Input((len(features1) * 6 + len(features2),))
-d = Dense(len(features2))(input_)
+d = Dense(len(features2) * 4)(input_)
+d = Dense(len(features2))(d)
 income = keras.Model(input_, d, name='income')
 income.compile(optimizer='adam', loss='MAE')
 
@@ -76,7 +76,7 @@ def train_outlay(data1, data2, file_outlay):  #Исключительно под
             train___.append(re.sub('[,]', '.', temp))
         train.append(train___)
     train = np.array(train).astype('float32')
-    while np.linalg.norm(outlay.predict(train[0] - target[0])) > 1000:
+    while np.linalg.norm(outlay.predict(train[0].reshape(-1, len(train[0]))) - target[0]) > 1000:
         outlay.fit(train, target, epochs=3, batch_size = 1)
     outlay.save_weights(file_outlay)
     
@@ -109,7 +109,7 @@ def train(data1, data2, file_income):  #Исключительно под обу
             train___.append(re.sub('[,]', '.', temp))
         train.append(train___)
     train = np.array(train).astype('float32')
-    while np.linalg.norm(income.predict(train[0] - target[0])) > 1000:
+    while np.linalg.norm(income.predict(train[0].reshape(-1, len(train[0])))  - target[0]) > 1000:
             income.fit(train, target, epochs=3, batch_size = 1)
     outlay.save_weights(file_income)
 
