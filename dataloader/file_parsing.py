@@ -18,7 +18,7 @@ def read_file_to_dataframe(filename: str, data) -> any:
     return df
 
 def select_cols_for_facts_df(df: pd.DataFrame) -> pd.DataFrame:
-    facts_regex = re.compile('(Наименование\s+?показателя|Исполнено,\s+?бюджет\s+?субъекта\s+?РФ)', re.IGNORECASE)
+    facts_regex = re.compile('(Наименование\s+?показателя|Консолидированный бюджет)', re.IGNORECASE)
     
     facts_line = None
     for row in df.fillna('').astype(str).values:
@@ -26,10 +26,12 @@ def select_cols_for_facts_df(df: pd.DataFrame) -> pd.DataFrame:
         n_matched = len([x for x in matches if x is True])
         if n_matched > 0 and facts_line is None:
             facts_line = matches.copy()
-        elif n_matched > 0:
+        elif n_matched > 0 and facts_line is not None:
             facts_line = np.logical_or(facts_line, matches).reshape((-1, ))
             break
         
+    if facts_line is None:
+        return df.T.iloc[[0, len(df.columns) - 1]].T
     facts_line[0] = True
     return df.T.iloc[np.argwhere(facts_line).reshape((-1,))].T
 
