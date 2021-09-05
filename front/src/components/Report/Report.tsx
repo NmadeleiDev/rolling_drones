@@ -1,4 +1,4 @@
-import { makeStyles } from "@material-ui/core";
+import { Button, makeStyles } from "@material-ui/core";
 import Chart, { ChartProps } from "../Chart/Chart";
 import Page from "../Page/Page";
 import { useLocation } from "react-router-dom";
@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { api } from "../../axios";
 import { useSnackbar } from "notistack";
 import { ChartData } from "chart.js";
+
+import XLSX from "xlsx";
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -74,9 +76,31 @@ function Report() {
     getChartData();
   }, []);
 
+  const saveData = () => {
+    const wb = XLSX.utils.book_new();
+
+    const ws_name = "SheetJS";
+
+    // /* make worksheet */
+    var ws_data = [
+      data?.labels || [],
+      data?.datasets[0].data || [],
+      data?.datasets[1].data || [],
+    ];
+
+    console.log(ws_data);
+    var ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+    // /* Add the worksheet to the workbook */
+    XLSX.utils.book_append_sheet(wb, ws, ws_name);
+
+    XLSX.writeFile(wb, "out.xlsb");
+  };
+
   return (
     <Page>
       <Chart title="Income" year={year} data={data} />
+      <Button onClick={saveData}>Сохранить прогноз</Button>
     </Page>
   );
 }
