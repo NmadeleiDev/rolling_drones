@@ -1,4 +1,5 @@
 import { makeStyles } from "@material-ui/core";
+import DataGrid from "../DataGrid/DataGrid";
 import Page from "../Page/Page";
 
 const useStyles = makeStyles((theme) => ({
@@ -9,7 +10,7 @@ function Settings() {
   const styles = useStyles();
   return (
     <Page>
-      <div>Settings</div>
+      <DataGrid />
     </Page>
   );
 }

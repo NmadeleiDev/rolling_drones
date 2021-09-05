@@ -15,7 +15,7 @@ import Header from "./components/Header/Header";
 const useStyles = makeStyles((theme) => ({
   grid: {
     position: "relative",
-    width: "100vw",
+    minWidth: 900,
     height: "100vh",
     padding: "1rem",
     background: `linear-gradient(125deg, ${backgroundColor.bgLight}, ${backgroundColor.bgDark})`,
@@ -27,7 +27,12 @@ const useStyles = makeStyles((theme) => ({
 function App() {
   const styles = useStyles();
   return (
-    <Grid container alignItems="flex-start" className={styles.grid}>
+    <Grid
+      container
+      direction="column"
+      alignItems="flex-start"
+      className={styles.grid}
+    >
       <Header />
       <Router>
         <Sidebar />

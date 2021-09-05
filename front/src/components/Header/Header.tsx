@@ -25,6 +25,7 @@ function Header() {
         <img
           className={styles.img}
           src={process.env.PUBLIC_URL + "logo512.png"}
+          alt="logo"
         />
         Rolling Drones
       </Grid>
