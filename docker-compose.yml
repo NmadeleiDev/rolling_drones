@@ -59,16 +59,29 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./letsencrypt:/letsencrypt"
-  # ml-serving:
-  #   image: quay.io/codait/max-resnet-50
-  #   volumes: 
-  #     - "./ml:/app"
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.middlewares.test-compress.compress=true" 
-  #     - "traefik.http.routers.ml.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/ml`)"
-  #     - "traefik.http.middlewares.test-stripprefix.stripprefix.prefixes=/ml" # declare middleware
-  #     - "traefik.http.routers.ml.middlewares=test-compress,test-stripprefix" # apply middleware
+
+  ml-serving:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    volumes:
+      - /etc/localtime:/etc/localtime/:ro
+      - ./ml/:/app/:rw # для правки кода без перезагрузки
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      DEBUG: ${DEBUG}
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.test-compress.compress=true" 
+      - "traefik.http.middlewares.ml-stripprefix.stripprefix.prefixes=/ml" # declare middleware
+      - "traefik.http.routers.ml.rule=Host(`${HOST:-localhost}`) && PathPrefix(`/ml`)"
+      - "traefik.http.routers.ml.middlewares=test-compress,ml-stripprefix" # apply middleware
+
   front:
     image: nginx:alpine
     volumes: 
@@ -96,6 +109,8 @@ services:
   db:
     image: postgres
     restart: always
+    ports:
+      - "5432:5432"
     environment:
       # POSTGRES_USER: admin
       POSTGRES_DB: ${POSTGRES_DB}

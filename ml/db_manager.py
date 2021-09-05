@@ -22,9 +22,9 @@ class DbPandasManager():
     def load_dataset(self, ds_name: str) -> pd.DataFrame:
         conn = self.engine.connect()
         try:
-            res = pd.read_sql("select * from {}.{}".format(self.datasets_schema_name, ds_name), conn)
+            res = pd.read_sql('select * from {}."{}"'.format(self.datasets_schema_name, ds_name), conn)
         except Exception as e:
-            logging.error("Failed to write df: {}".format(e))
+            logging.error("Failed to load df: {}".format(e))
             res = None
         conn.close
         return res
@@ -33,6 +33,7 @@ class DbPandasManager():
 class DbPlainManager():
     models_info_schema = "models_info"
     models_info_table = "model"
+    datasets_schema_name = 'user_datasets'
 
     def __init__(self) -> None:
         self.db_name = os.getenv('POSTGRES_DB')
@@ -87,7 +88,7 @@ class DbPlainManager():
             if len(res) > 0:
                 res = res[0]
         except Exception as e:
-            logging.error("Failed to insert model info: {}".format(e))
+            logging.error("Failed to get_model_weights_filename: {}".format(e))
             res = ''
         self.close_conn()        
         return res
@@ -99,7 +100,7 @@ class DbPlainManager():
             res = self.cursor.fetchall()
             res = [x[0] for x in res]
         except Exception as e:
-            logging.error("Failed to insert model info: {}".format(e))
+            logging.error("Failed to get_dataset_names: {}".format(e))
             res = []
         self.close_conn()        
         return res

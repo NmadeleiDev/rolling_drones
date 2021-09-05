@@ -16,8 +16,8 @@ def find_data(frame, features):
                 dist.append(distance(str(f), str(r))) 
             if rows:
                 t = np.argmin(np.asarray(dist))
-                if min(np.asarray(dist)) > 10:
-                    raise Exception("Not enought data")
+                if min(np.asarray(dist)) > 1000:
+                    raise Exception("Not enought data, min dist = {}".format(min(np.asarray(dist))))
                 col.append(rows[t])
                 rows.remove(rows[t])
         return frame.loc[[i in col for i in frame[frame.columns[0]]]].drop_duplicates(subset = [frame.columns[0]]).sort_values(frame.columns[0])
@@ -45,7 +45,8 @@ def train_outlay(data1, data2, file_outlay):  #Исключительно под
     
     train_data = []
     for h in data1[1:]:
-        train_data.append(np.asarray(find_data(h, features1)[h.columns[1:]]).reshape(len(features1) * 6,))
+        # train_data.append(np.asarray(find_data(h, features1)[h.columns[1:]]).reshape(len(features1) * 6,))
+        train_data.append(np.asarray(find_data(h, features1)[h.columns[1:]]).reshape(-1,))
     
     train_data_ = []
     for g in data2:
