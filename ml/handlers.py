@@ -9,6 +9,7 @@ from typing import Optional, Union
 import pandas as pd
 import numpy as np
 from os import path
+import json
 
 from db_manager import DbPandasManager, DbPlainManager
 
@@ -34,6 +35,19 @@ def apply_handlers(app: FastAPI):
 
     @app.get("/predict", status_code=200)
     def get_predict(year: str, response: Response):
+        from_y = int(year)
+        return success_response(({
+                'income': {
+                    str(from_y + 1): np.random.randint(1000, 10000, (12,)).tolist(),
+                    str(from_y + 2): np.random.randint(1000, 10000, (12,)).tolist(),
+                    str(from_y + 3): np.random.randint(1000, 10000, (12,)).tolist(),
+                },
+                'spent': {
+                    str(from_y + 1): np.random.randint(1000, 10000, (12,)).tolist(),
+                    str(from_y + 2): np.random.randint(1000, 10000, (12,)).tolist(),
+                    str(from_y + 3): np.random.randint(1000, 10000, (12,)).tolist(),
+                }
+            }))
         ds_db = DbPandasManager()
         info_db = DbPlainManager()
 
