@@ -13,7 +13,7 @@ import json
 
 from db_manager import DbPandasManager, DbPlainManager
 
-from model import predict_outlay, predict_income, train_income, train_outlay
+from model import predict_outlay, predict, train, train_outlay
 
 forecaset_ds_suffix = 'forecast'
 fact_ds_suffix = 'fact'
@@ -35,19 +35,19 @@ def apply_handlers(app: FastAPI):
 
     @app.get("/predict", status_code=200)
     def get_predict(year: str, response: Response):
-        from_y = int(year)
-        return success_response(({
-                'income': {
-                    str(from_y + 1): np.random.randint(1000, 10000, (12,)).tolist(),
-                    str(from_y + 2): np.random.randint(1000, 10000, (12,)).tolist(),
-                    str(from_y + 3): np.random.randint(1000, 10000, (12,)).tolist(),
-                },
-                'spent': {
-                    str(from_y + 1): np.random.randint(1000, 10000, (12,)).tolist(),
-                    str(from_y + 2): np.random.randint(1000, 10000, (12,)).tolist(),
-                    str(from_y + 3): np.random.randint(1000, 10000, (12,)).tolist(),
-                }
-            }))
+        # from_y = int(year)
+        # return success_response(({
+        #         'income': {
+        #             str(from_y + 1): np.random.randint(1000, 10000, (12,)).tolist(),
+        #             str(from_y + 2): np.random.randint(1000, 10000, (12,)).tolist(),
+        #             str(from_y + 3): np.random.randint(1000, 10000, (12,)).tolist(),
+        #         },
+        #         'spent': {
+        #             str(from_y + 1): np.random.randint(1000, 10000, (12,)).tolist(),
+        #             str(from_y + 2): np.random.randint(1000, 10000, (12,)).tolist(),
+        #             str(from_y + 3): np.random.randint(1000, 10000, (12,)).tolist(),
+        #         }
+        #     }))
         ds_db = DbPandasManager()
         info_db = DbPlainManager()
 
@@ -56,7 +56,7 @@ def apply_handlers(app: FastAPI):
 
         income_model_weights_path = info_db.get_model_weights_filename(make_model_name('income'))
         spent_model_weights_path = info_db.get_model_weights_filename(make_model_name('spent'))
-        income_predict = predict_income(ser_ds, facts_ds, income_model_weights_path)
+        income_predict = predict(ser_ds, facts_ds, income_model_weights_path)
         spent_predict = predict_outlay(ser_ds, facts_ds, spent_model_weights_path)
 
         return success_response({'income': income_predict, 'spent': spent_predict})
@@ -104,7 +104,7 @@ def apply_handlers(app: FastAPI):
         inc_train_ok , spent_train_ok = False, False
         msgs = []
         try:
-            train_income(ser_samples, income_samples, income_model_weights_file_name)
+            train(ser_samples, income_samples, income_model_weights_file_name)
             inc_train_ok = True
             msgs.append('Trained income model')
             info_db.save_model_info(income_model_weights_file_name, make_model_path(income_model_weights_file_name))
