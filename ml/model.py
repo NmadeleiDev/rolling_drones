@@ -5,7 +5,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten, Input, Lambda
 import re
-
 def find_data(frame, features):
         rows = list(frame[frame.columns[1]])
         col = []
@@ -109,6 +108,7 @@ def train(data1, data2, file_income):  #Исключительно под обу
             train___.append(re.sub('[,]', '.', temp))
         train.append(train___)
     train = np.array(train).astype('float32')
+    #print(train[1], target[1])
     while np.linalg.norm(income.predict(train[0].reshape(-1, len(train[0])))  - target[0]) > 1000:
             income.fit(train, target, epochs=3, batch_size = 1)
     outlay.save_weights(file_income)
