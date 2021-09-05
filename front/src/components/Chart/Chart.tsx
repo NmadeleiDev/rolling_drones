@@ -14,14 +14,19 @@ const useStyles = makeStyles((theme) => ({
     fontSize: "2rem",
     padding: 30,
     margin: 30,
-    width: 500,
-    height: 300,
+    width: 700,
+    height: 400,
     backdropFilter: "blur(10px) saturate(120%)",
+  },
+  header: {
+    fontSize: "1rem",
   },
 }));
 
 export interface ChartProps {
-  data?: ChartData;
+  data?: any;
+  year?: string;
+  title?: string;
 }
 
 const colors = {
@@ -53,30 +58,37 @@ const mockData: ChartData = {
 
 function Chart(props: ChartProps) {
   const styles = useStyles();
-  // const setGradientColor = (canvas: HTMLCanvasElement, color: string) => {
-  //   const gradient = canvas
-  //     .getContext("2d")
-  //     ?.createLinearGradient(0, 0, 700, 400);
-  //   if (!gradient) return;
-  //   gradient.addColorStop(0, color);
-  //   gradient.addColorStop(1, "white");
-  //   return gradient;
-  // };
+  console.log("[Chart] props:", props);
 
+  const setGradientColor = (canvas: HTMLCanvasElement, color: string) => {
+    const gradient = canvas
+      .getContext("2d")
+      ?.createLinearGradient(0, 0, 400, 0);
+    gradient?.addColorStop(0, color);
+    gradient?.addColorStop(1, "#ffffff");
+    return gradient;
+  };
   const getChartData = (canvas: HTMLCanvasElement) => {
     const data = props.data || mockData;
-    // if (data.datasets) {
-    // let colors = [primaryColor.main, secondaryColor.main];
-    // data.datasets.forEach((set, i) => {
-    //   // set.backgroundColor = setGradientColor(canvas, colors[i]);
-    //   // set.borderColor = colors[i];
-    //   set.borderWidth = 2;
-    // });
-    // }
+    console.log("[getChartData] data:", data);
+    if (data.datasets) {
+      data.datasets.forEach((set: any, i: number) => {
+        set.backgroundColor = setGradientColor(
+          canvas,
+          colors[i == 0 ? "green" : "orange"]
+        );
+        set.borderColor = colors[i == 0 ? "green" : "orange"];
+        set.borderWidth = 2;
+      });
+    }
     return data;
   };
   return (
     <div className={styles.root}>
+      <h2 className={styles.header}>
+        {props.title}
+        {props.year && ` for ${props.year}`}
+      </h2>
       <div className={styles.card}>
         <Line
           options={{

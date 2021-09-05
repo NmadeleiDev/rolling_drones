@@ -11,6 +11,7 @@ import {
   Redirect,
 } from "react-router-dom";
 import Header from "./components/Header/Header";
+import { SnackbarProvider } from "notistack";
 
 const useStyles = makeStyles((theme) => ({
   grid: {
@@ -21,6 +22,14 @@ const useStyles = makeStyles((theme) => ({
     background: `linear-gradient(125deg, ${backgroundColor.bgLight}, ${backgroundColor.bgDark})`,
     textAlign: "center",
     color: theme.palette.text.primary,
+  },
+  root: {
+    maxWidth: "100%",
+    minWidth: 500,
+    margin: 0,
+    [theme.breakpoints.down("xs")]: {
+      padding: 0,
+    },
   },
 }));
 
@@ -35,19 +44,21 @@ function App() {
     >
       <Header />
       <Router>
-        <Sidebar />
-        <Switch>
-          <Route path="/upload">
-            <Upload />
-          </Route>
-          <Route path="/report">
-            <Report />
-          </Route>
-          <Route path="/settings">
-            <Settings />
-          </Route>
-          <Redirect from="/" to="/upload" />
-        </Switch>
+        <SnackbarProvider maxSnack={3} classes={{ containerRoot: styles.root }}>
+          <Sidebar />
+          <Switch>
+            <Route path="/upload">
+              <Upload />
+            </Route>
+            <Route path="/report">
+              <Report />
+            </Route>
+            <Route path="/settings">
+              <Settings />
+            </Route>
+            <Redirect from="/" to="/upload" />
+          </Switch>
+        </SnackbarProvider>
       </Router>
     </Grid>
   );
