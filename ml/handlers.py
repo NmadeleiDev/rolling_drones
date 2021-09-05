@@ -51,13 +51,14 @@ def apply_handlers(app: FastAPI):
         ds_db = DbPandasManager()
         info_db = DbPlainManager()
 
-        ser_ds = ds_db.load_dataset(make_table_name(year, "forecast"))
-        facts_ds = ds_db.load_dataset(make_table_name(year, "fact"))
+        ser_ds = ds_db.load_dataset(make_table_name(year, forecaset_ds_suffix))
+        income_ds = ds_db.load_dataset(make_table_name(year, income_ds_suffix))
+        spent_ds = ds_db.load_dataset(make_table_name(year, spent_ds_suffix))
 
         income_model_weights_path = info_db.get_model_weights_filename(make_model_name('income'))
         spent_model_weights_path = info_db.get_model_weights_filename(make_model_name('spent'))
-        income_predict = predict(ser_ds, facts_ds, income_model_weights_path)
-        spent_predict = predict_outlay(ser_ds, facts_ds, spent_model_weights_path)
+        income_predict = predict(ser_ds, income_ds, income_model_weights_path)
+        spent_predict = predict_outlay(ser_ds, spent_ds, spent_model_weights_path)
 
         return success_response({'income': income_predict, 'spent': spent_predict})
 
